@@ -27,8 +27,12 @@ export default function FinesListPage() {
 
   const canPay = (f) => f.status === 'pending' && (user?.role === 'driver' || user?.role === 'admin');
 
+  const isOverdue = (f) => (f.dueDate ? new Date(f.dueDate) < new Date() : false);
+
   const canCancel = (f) =>
-    f.status === 'pending' && (user?.role === 'officer' || user?.role === 'admin');
+    f.status === 'pending' &&
+    !isOverdue(f) &&
+    (user?.role === 'officer' || user?.role === 'admin');
 
   const handleCancel = async (fineId) => {
     if (!window.confirm('Are you sure you want to cancel this fine?')) return;
@@ -81,7 +85,15 @@ export default function FinesListPage() {
                   <td className="px-6 py-3 text-sm">{f.violationId?.description}</td>
                   <td className="px-6 py-3 text-sm">₹{f.amount}</td>
                   <td className="px-6 py-3">
-                    <span className={`px-2 py-1 text-xs rounded ${f.status === 'paid' ? 'bg-green-100 text-green-800' : f.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        f.status === 'paid'
+                          ? 'bg-green-100 text-green-800'
+                          : f.status === 'pending'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
                       {f.status}
                     </span>
                   </td>

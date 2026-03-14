@@ -98,6 +98,11 @@ exports.updateFine = async (req, res) => {
     if (fine.status === 'paid') {
       return res.status(400).json({ success: false, message: 'Cannot update a paid fine.' });
     }
+    if (status === 'cancelled' && fine.dueDate && new Date() > fine.dueDate) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Cannot cancel a fine after the due date.' });
+    }
     if (status) fine.status = status;
     await fine.save();
     const populated = await Fine.findById(fine._id)

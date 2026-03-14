@@ -4,6 +4,7 @@ import { usersAPI } from '../api/endpoints';
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -32,25 +33,67 @@ export default function AdminUsersPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.name || !form.email || !form.password) {
-      setError('Name, email and password are required.');
+    if (!form.name || !form.email || (!editingUser && !form.password)) {
+      setError(editingUser ? 'Name and email are required.' : 'Name, email and password are required.');
       return;
     }
     setSaving(true);
     try {
-      await usersAPI.create({
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        role: form.role,
-        badgeId: form.role === 'officer' ? form.badgeId : undefined,
-      });
+      if (editingUser) {
+        await usersAPI.update(editingUser._id, {
+          name: form.name,
+          email: form.email,
+          password: form.password || undefined,
+          role: form.role,
+          badgeId: form.role === 'officer' ? form.badgeId : undefined,
+        });
+      } else {
+        await usersAPI.create({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          role: form.role,
+          badgeId: form.role === 'officer' ? form.badgeId : undefined,
+        });
+      }
       setForm({ name: '', email: '', password: '', role: 'officer', badgeId: '' });
+      setEditingUser(null);
       loadUsers();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create user.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const startEdit = (user) => {
+    setEditingUser(user);
+    setForm({
+      name: user.name || '',
+      email: user.email || '',
+      password: '',
+      role: user.role || 'officer',
+      badgeId: user.badgeId || '',
+    });
+    setError('');
+  };
+
+  const cancelEdit = () => {
+    setEditingUser(null);
+    setForm({ name: '', email: '', password: '', role: 'officer', badgeId: '' });
+    setError('');
+  };
+
+  const handleDelete = async (user) => {
+    if (!window.confirm(`Delete user ${user.email}?`)) return;
+    try {
+      await usersAPI.remove(user._id);
+      if (editingUser && editingUser._id === user._id) {
+        cancelEdit();
+      }
+      loadUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete user.');
     }
   };
 
@@ -68,7 +111,9 @@ export default function AdminUsersPage() {
           onSubmit={handleSubmit}
           className="bg-white rounded-lg shadow p-6 space-y-4 lg:col-span-1"
         >
-          <h2 className="text-lg font-semibold text-gray-800">Create New User</h2>
+          <h2 className="text-lg font-semibold text-gray-800">
+            {editingUser ? 'Edit User' : 'Create New User'}
+          </h2>
           {error && <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</div>}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
@@ -89,7 +134,9 @@ export default function AdminUsersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password {editingUser ? '(leave blank to keep unchanged)' : '*'}
+            </label>
             <input
               type="password"
               value={form.password}
@@ -122,13 +169,24 @@ export default function AdminUsersPage() {
               />
             </div>
           )}
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full bg-primary-600 text-white py-2 rounded hover:bg-primary-700 disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Create User'}
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 bg-primary-600 text-white py-2 rounded hover:bg-primary-700 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : editingUser ? 'Update User' : 'Create User'}
+            </button>
+            {editingUser && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="bg-white rounded-lg shadow p-6 lg:col-span-2">
@@ -154,6 +212,9 @@ export default function AdminUsersPage() {
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Badge
                     </th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -175,6 +236,22 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
                       <td className="px-4 py-2 text-sm text-gray-600">{u.badgeId || '-'}</td>
+                      <td className="px-4 py-2 text-sm text-right space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(u)}
+                          className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-primary-50 text-primary-700 hover:bg-primary-100"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(u)}
+                          className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-red-50 text-red-700 hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
