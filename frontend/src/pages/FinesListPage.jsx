@@ -9,15 +9,37 @@ export default function FinesListPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
 
-  useEffect(() => {
-    const params = statusFilter ? { status: statusFilter } : {};
-    finesAPI.list(params)
-      .then((res) => { if (res.data.success) setFines(res.data.data); })
+  const loadFines = (status) => {
+    setLoading(true);
+    const params = status ? { status } : {};
+    finesAPI
+      .list(params)
+      .then((res) => {
+        if (res.data.success) setFines(res.data.data);
+      })
       .catch(() => setFines([]))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadFines(statusFilter);
   }, [statusFilter]);
 
   const canPay = (f) => f.status === 'pending' && (user?.role === 'driver' || user?.role === 'admin');
+
+  const canCancel = (f) =>
+    f.status === 'pending' && (user?.role === 'officer' || user?.role === 'admin');
+
+  const handleCancel = async (fineId) => {
+    if (!window.confirm('Are you sure you want to cancel this fine?')) return;
+    try {
+      await finesAPI.update(fineId, { status: 'cancelled' });
+      loadFines(statusFilter);
+    } catch (err) {
+      // simple alert for demo purposes
+      alert(err.response?.data?.message || 'Failed to cancel fine.');
+    }
+  };
 
   return (
     <div>
@@ -33,7 +55,7 @@ export default function FinesListPage() {
         </div>
       )}
       {loading ? (
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-gray-500">Loading fines...</p>
       ) : fines.length === 0 ? (
         <p className="text-gray-500">No fines found.</p>
       ) : (
@@ -63,8 +85,24 @@ export default function FinesListPage() {
                       {f.status}
                     </span>
                   </td>
-                  <td className="px-6 py-3">
-                    {canPay(f) && <Link to={`/fines/${f._id}/pay`} className="text-primary-600 hover:underline text-sm">Pay</Link>}
+                  <td className="px-6 py-3 space-x-2">
+                    {canPay(f) && (
+                      <Link
+                        to={`/fines/${f._id}/pay`}
+                        className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-primary-50 text-primary-700 hover:bg-primary-100"
+                      >
+                        Pay
+                      </Link>
+                    )}
+                    {canCancel(f) && (
+                      <button
+                        type="button"
+                        onClick={() => handleCancel(f._id)}
+                        className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-red-50 text-red-700 hover:bg-red-100"
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -19,9 +19,10 @@ export function Layout() {
               <Link to="/" className="font-semibold text-lg">Traffic Fine System</Link>
               {user?.role === 'admin' && (
                 <>
-                  <Link to="/admin" className="hover:bg-primary-500 px-3 py-2 rounded">Admin</Link>
+                  <Link to="/admin" className="hover:bg-primary-500 px-3 py-2 rounded">Dashboard</Link>
                   <Link to="/fines" className="hover:bg-primary-500 px-3 py-2 rounded">Fines</Link>
                   <Link to="/payments" className="hover:bg-primary-500 px-3 py-2 rounded">Payments</Link>
+                  <Link to="/users" className="hover:bg-primary-500 px-3 py-2 rounded">Users</Link>
                 </>
               )}
               {user?.role === 'officer' && (

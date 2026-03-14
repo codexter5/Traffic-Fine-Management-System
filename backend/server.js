@@ -10,6 +10,7 @@ const violationRoutes = require('./routes/violationRoutes');
 const fineRoutes = require('./routes/fineRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 connectDB();
 
@@ -24,6 +25,7 @@ app.use('/api/violations', violationRoutes);
 app.use('/api/fines', fineRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'API is running' }));
 

@@ -9,6 +9,7 @@ import IssueFineForm from './pages/IssueFineForm';
 import PayFinePage from './pages/PayFinePage';
 import FinesListPage from './pages/FinesListPage';
 import PaymentsListPage from './pages/PaymentsListPage';
+import AdminUsersPage from './pages/AdminUsersPage';
 
 function DashboardRedirect() {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ function App() {
         <Route index element={<DashboardRedirect />} />
         <Route path="police" element={<ProtectedRoute allowedRoles={['officer', 'admin']}><PoliceDashboard /></ProtectedRoute>} />
         <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsersPage /></ProtectedRoute>} />
         <Route path="driver" element={<ProtectedRoute allowedRoles={['driver']}><DriverDashboard /></ProtectedRoute>} />
         <Route path="issue-fine" element={<ProtectedRoute allowedRoles={['officer', 'admin']}><IssueFineForm /></ProtectedRoute>} />
         <Route path="fines" element={<FinesListPage />} />

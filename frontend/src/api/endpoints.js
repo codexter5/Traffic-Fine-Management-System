@@ -36,3 +36,8 @@ export const paymentsAPI = {
 export const adminAPI = {
   getStats: () => api.get('/admin/stats'),
 };
+
+export const usersAPI = {
+  list: () => api.get('/users'),
+  create: (data) => api.post('/users', data),
+};
