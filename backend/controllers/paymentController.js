@@ -1,6 +1,8 @@
 const Payment = require('../models/Payment');
 const Fine = require('../models/Fine');
 const Driver = require('../models/Driver');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 const generateTransactionId = () => `TXN${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
@@ -32,6 +34,35 @@ exports.payFine = async (req, res) => {
     });
     fine.status = 'paid';
     await fine.save();
+
+    const driverName = fine.driverId?.name || 'A driver';
+    const message = `Fine ${fine.fineNumber} (₹${payAmount}) was paid by ${driverName}.`;
+    const notificationPromises = [];
+    if (fine.issuedBy) {
+      notificationPromises.push(
+        Notification.create({
+          recipientId: fine.issuedBy,
+          type: 'fine_paid',
+          message,
+          relatedId: { fineId: fine._id, paymentId: payment._id },
+        })
+      );
+    }
+    const admins = await User.find({ role: 'admin' }).select('_id').lean();
+    admins.forEach((a) => {
+      if (a._id.toString() !== (fine.issuedBy || '').toString()) {
+        notificationPromises.push(
+          Notification.create({
+            recipientId: a._id,
+            type: 'fine_paid',
+            message,
+            relatedId: { fineId: fine._id, paymentId: payment._id },
+          })
+        );
+      }
+    });
+    await Promise.all(notificationPromises);
+
     const populated = await Payment.findById(payment._id).populate('fineId').lean();
     res.status(201).json({
       success: true,

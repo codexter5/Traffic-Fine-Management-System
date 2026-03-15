@@ -9,6 +9,7 @@ exports.getDrivers = async (req, res) => {
         { name: new RegExp(search, 'i') },
         { licenseNumber: new RegExp(search, 'i') },
         { phone: new RegExp(search, 'i') },
+        { email: new RegExp(search, 'i') },
       ];
     }
     const skip = (Number(page) - 1) * Number(limit);

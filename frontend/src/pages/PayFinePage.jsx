@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { finesAPI } from '../api/endpoints';
+import { useToast } from '../context/ToastContext';
 
 export default function PayFinePage() {
   const { id } = useParams();
@@ -9,10 +10,15 @@ export default function PayFinePage() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [method, setMethod] = useState('card');
+  const [success, setSuccess] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
-    finesAPI.get(id)
-      .then((res) => { if (res.data.success) setFine(res.data.data); })
+    finesAPI
+      .get(id)
+      .then((res) => {
+        if (res.data.success) setFine(res.data.data);
+      })
       .catch(() => setFine(null))
       .finally(() => setLoading(false));
   }, [id]);
@@ -21,11 +27,15 @@ export default function PayFinePage() {
     e.preventDefault();
     if (!fine || fine.status === 'paid') return;
     setPaying(true);
+    setSuccess('');
     try {
       const res = await finesAPI.pay(id, { amount: fine.amount, method });
       if (res.data.success) {
-        alert('Payment successful (simulated). Transaction: ' + res.data.data.payment?.transactionId);
-        navigate('/driver');
+        setSuccess(
+          `Payment recorded. Transaction: ${res.data.data.payment?.transactionId ?? 'N/A'}`
+        );
+        showToast('Payment successful. Officers have been notified.');
+        setTimeout(() => navigate('/driver'), 2000);
       }
     } catch (err) {
       alert(err.response?.data?.message || 'Payment failed');
@@ -34,41 +44,90 @@ export default function PayFinePage() {
     }
   };
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
-  if (!fine) return <p className="text-red-500">Fine not found.</p>;
+  if (loading) {
+    return (
+      <div className="card">
+        <div className="card-body">
+          <p className="text-gray-500 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  if (!fine) {
+    return (
+      <div className="card">
+        <div className="card-body">
+          <p className="text-red-600 text-sm">Fine not found.</p>
+          <button onClick={() => navigate(-1)} className="btn-secondary mt-3">
+            Back
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (fine.status === 'paid') {
     return (
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Pay Fine</h1>
-        <p className="text-green-600 font-medium">This fine has already been paid.</p>
-        <button onClick={() => navigate(-1)} className="mt-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Back</button>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-gray-900">Pay Fine</h1>
+        <div className="card">
+          <div className="card-body">
+            <p className="text-green-600 font-medium">This fine has already been paid.</p>
+            <button onClick={() => navigate(-1)} className="btn-secondary mt-4">
+              Back
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Pay Fine</h1>
-      <div className="max-w-md bg-white rounded-lg shadow p-6 mb-6">
-        <p><span className="text-gray-500">Fine #:</span> {fine.fineNumber}</p>
-        <p><span className="text-gray-500">Violation:</span> {fine.violationId?.description}</p>
-        <p><span className="text-gray-500">Amount:</span> <strong>₹{fine.amount}</strong></p>
-      </div>
-      <form onSubmit={handlePay} className="max-w-md bg-white rounded-lg shadow p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-          <select value={method} onChange={(e) => setMethod(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2">
-            <option value="card">Card</option>
-            <option value="upi">UPI</option>
-            <option value="netbanking">Net Banking</option>
-          </select>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">Pay Fine</h1>
+      <div className="card max-w-md">
+        <div className="card-body space-y-1">
+          <p>
+            <span className="text-gray-500">Fine #:</span>{' '}
+            <span className="font-medium text-gray-900">{fine.fineNumber}</span>
+          </p>
+          <p>
+            <span className="text-gray-500">Violation:</span>{' '}
+            <span className="text-gray-900">{fine.violationId?.description}</span>
+          </p>
+          <p>
+            <span className="text-gray-500">Amount:</span>{' '}
+            <strong className="text-gray-900">₹{fine.amount}</strong>
+          </p>
         </div>
-        <p className="text-sm text-gray-500">This is a simulated payment. No real charge will be made.</p>
-        <div className="flex gap-4">
-          <button type="submit" disabled={paying} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50">
-            {paying ? 'Processing...' : 'Confirm Payment'}
-          </button>
-          <button type="button" onClick={() => navigate(-1)} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
+      </div>
+      <form onSubmit={handlePay} className="card max-w-md">
+        <div className="card-body space-y-4">
+          {success && (
+            <div className="text-sm text-green-700 bg-green-50 px-3 py-2.5 rounded-lg border border-green-100">
+              {success}
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Payment method</label>
+            <select
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              className="input-field"
+            >
+              <option value="card">Card</option>
+              <option value="upi">UPI</option>
+              <option value="netbanking">Net Banking</option>
+            </select>
+          </div>
+          <p className="text-sm text-gray-500">Simulated payment. No real charge.</p>
+          <div className="flex gap-3">
+            <button type="submit" disabled={paying} className="btn-primary bg-green-600 hover:bg-green-700">
+              {paying ? 'Processing...' : 'Confirm payment'}
+            </button>
+            <button type="button" onClick={() => navigate(-1)} className="btn-secondary">
+              Cancel
+            </button>
+          </div>
         </div>
       </form>
     </div>

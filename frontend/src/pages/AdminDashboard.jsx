@@ -7,50 +7,95 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminAPI.getStats()
-      .then((res) => { if (res.data.success) setStats(res.data.data); })
+    adminAPI
+      .getStats()
+      .then((res) => {
+        if (res.data.success) setStats(res.data.data);
+      })
       .catch(() => setStats(null))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
-  if (!stats) return <p className="text-red-500">Failed to load stats.</p>;
+  if (loading) {
+    return (
+      <div className="card">
+        <div className="card-body">
+          <p className="text-gray-500 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  if (!stats) {
+    return (
+      <div className="card">
+        <div className="card-body">
+          <p className="text-red-600 text-sm">Failed to load stats.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-primary-500">
-          <p className="text-gray-500 text-sm">Total Fines</p>
-          <p className="text-2xl font-bold text-gray-800">{stats.totalFines}</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500">Overview of data stored in the database.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="card border-l-4 border-l-primary-500">
+          <div className="card-body">
+            <p className="text-sm text-gray-500">Total fines</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalFines}</p>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
-          <p className="text-gray-500 text-sm">Pending Fines</p>
-          <p className="text-2xl font-bold text-amber-600">{stats.pendingFines}</p>
+        <div className="card border-l-4 border-l-amber-500">
+          <div className="card-body">
+            <p className="text-sm text-gray-500">Pending fines</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{stats.pendingFines}</p>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-          <p className="text-gray-500 text-sm">Paid Fines</p>
-          <p className="text-2xl font-bold text-green-600">{stats.paidFines}</p>
+        <div className="card border-l-4 border-l-green-500">
+          <div className="card-body">
+            <p className="text-sm text-gray-500">Paid fines</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{stats.paidFines}</p>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
-          <p className="text-gray-500 text-sm">Total Revenue</p>
-          <p className="text-2xl font-bold text-indigo-600">₹{stats.totalRevenue?.toLocaleString() || 0}</p>
+        <div className="card border-l-4 border-l-indigo-500">
+          <div className="card-body">
+            <p className="text-sm text-gray-500">Total revenue</p>
+            <p className="text-2xl font-bold text-indigo-600 mt-1">
+              ₹{stats.totalRevenue?.toLocaleString() ?? 0}
+            </p>
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-500 text-sm">Registered Drivers</p>
-          <p className="text-2xl font-bold text-gray-800">{stats.totalDrivers}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card">
+          <div className="card-body">
+            <p className="text-sm text-gray-500">Registered drivers</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalDrivers}</p>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-500 text-sm">Registered Vehicles</p>
-          <p className="text-2xl font-bold text-gray-800">{stats.totalVehicles}</p>
+        <div className="card">
+          <div className="card-body">
+            <p className="text-sm text-gray-500">Registered vehicles</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalVehicles}</p>
+          </div>
         </div>
       </div>
-      <div className="flex gap-4">
-        <Link to="/fines" className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">View Fines</Link>
-        <Link to="/payments" className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">View Payments</Link>
-        <Link to="/issue-fine" className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Issue Fine</Link>
+      <div className="flex flex-wrap gap-3">
+        <Link to="/fines" className="btn-primary">
+          View fines
+        </Link>
+        <Link to="/payments" className="btn-secondary">
+          View payments
+        </Link>
+        <Link to="/issue-fine" className="btn-secondary">
+          Issue fine
+        </Link>
+        <Link to="/users" className="btn-secondary">
+          Manage users
+        </Link>
       </div>
     </div>
   );

@@ -2,8 +2,15 @@ import api from './axiosConfig';
 
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
+  signup: (data) => api.post('/auth/signup', data),
   register: (data) => api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
+};
+
+export const notificationsAPI = {
+  list: (params) => api.get('/notifications', { params }),
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
 };
 
 export const driversAPI = {

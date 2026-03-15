@@ -7,8 +7,11 @@ export default function DriverDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    finesAPI.list()
-      .then((res) => { if (res.data.success) setFines(res.data.data); })
+    finesAPI
+      .list()
+      .then((res) => {
+        if (res.data.success) setFines(res.data.data);
+      })
       .catch(() => setFines([]))
       .finally(() => setLoading(false));
   }, []);
@@ -17,54 +20,82 @@ export default function DriverDashboard() {
   const paid = fines.filter((f) => f.status === 'paid');
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">My Fines</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-amber-50 rounded-lg shadow p-6 border-l-4 border-amber-500">
-          <p className="text-amber-800 text-sm font-medium">Pending to Pay</p>
-          <p className="text-2xl font-bold text-amber-700">{pending.length}</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">My Fines</h1>
+        <p className="mt-1 text-sm text-gray-500">Fines linked to your account (from database).</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card border-l-4 border-l-amber-500 bg-amber-50/30">
+          <div className="card-body">
+            <p className="text-sm font-medium text-amber-800">Pending to pay</p>
+            <p className="text-2xl font-bold text-amber-700 mt-1">{pending.length}</p>
+          </div>
         </div>
-        <div className="bg-green-50 rounded-lg shadow p-6 border-l-4 border-green-500">
-          <p className="text-green-800 text-sm font-medium">Paid</p>
-          <p className="text-2xl font-bold text-green-700">{paid.length}</p>
+        <div className="card border-l-4 border-l-green-500 bg-green-50/30">
+          <div className="card-body">
+            <p className="text-sm font-medium text-green-800">Paid</p>
+            <p className="text-2xl font-bold text-green-700 mt-1">{paid.length}</p>
+          </div>
         </div>
       </div>
       {loading ? (
-        <p className="text-gray-500">Loading...</p>
+        <div className="card">
+          <div className="card-body">
+            <p className="text-gray-500 text-sm">Loading...</p>
+          </div>
+        </div>
       ) : fines.length === 0 ? (
-        <p className="text-gray-500">You have no fines.</p>
+        <div className="card">
+          <div className="card-body">
+            <p className="text-gray-500 text-sm">You have no fines.</p>
+          </div>
+        </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fine #</th>
-                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Violation</th>
-                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {fines.map((f) => (
-                <tr key={f._id}>
-                  <td className="px-6 py-3 text-sm text-gray-800">{f.fineNumber}</td>
-                  <td className="px-6 py-3 text-sm">{f.violationId?.description}</td>
-                  <td className="px-6 py-3 text-sm">₹{f.amount}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-1 text-xs rounded ${f.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                      {f.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    {f.status === 'pending' && (
-                      <Link to={`/fines/${f._id}/pay`} className="text-primary-600 hover:underline text-sm">Pay Now</Link>
-                    )}
-                  </td>
+        <div className="card">
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr>
+                  <th className="table-header">Fine #</th>
+                  <th className="table-header">Violation</th>
+                  <th className="table-header">Amount</th>
+                  <th className="table-header">Status</th>
+                  <th className="table-header text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {fines.map((f) => (
+                  <tr key={f._id} className="hover:bg-gray-50/50">
+                    <td className="table-cell font-medium text-gray-900">{f.fineNumber}</td>
+                    <td className="table-cell">{f.violationId?.description}</td>
+                    <td className="table-cell">₹{f.amount}</td>
+                    <td className="table-cell">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          f.status === 'paid'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {f.status}
+                      </span>
+                    </td>
+                    <td className="table-cell text-right">
+                      {f.status === 'pending' && (
+                        <Link
+                          to={`/fines/${f._id}/pay`}
+                          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                        >
+                          Pay now
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
