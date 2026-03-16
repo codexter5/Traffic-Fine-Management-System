@@ -9,14 +9,18 @@ const navLinks = {
     { to: '/fines', label: 'Fines' },
     { to: '/payments', label: 'Payments' },
     { to: '/users', label: 'Users' },
+    { to: '/profile', label: 'Profile' },
   ],
   officer: [
     { to: '/police', label: 'Dashboard' },
     { to: '/issue-fine', label: 'Issue Fine' },
     { to: '/fines', label: 'My Fines' },
+    { to: '/profile', label: 'Profile' },
   ],
   driver: [
     { to: '/driver', label: 'My Fines' },
+    { to: '/my-vehicles', label: 'My Vehicles' },
+    { to: '/profile', label: 'Profile' },
   ],
 };
 
@@ -55,7 +59,7 @@ export function Layout() {
             </div>
 
             <div className="flex items-center gap-2">
-              {(user?.role === 'admin' || user?.role === 'officer') && <NotificationBell />}
+              <NotificationBell />
               <span className="hidden sm:inline text-sm text-primary-100 truncate max-w-[120px]">
                 {user?.name} <span className="text-primary-200">({user?.role})</span>
               </span>

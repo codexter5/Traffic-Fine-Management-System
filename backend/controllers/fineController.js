@@ -1,5 +1,7 @@
 const Fine = require('../models/Fine');
 const Driver = require('../models/Driver');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 const generateFineNumber = () => {
   const prefix = 'TF';
@@ -79,11 +81,28 @@ exports.createFine = async (req, res) => {
       notes,
     });
     const populated = await Fine.findById(fine._id)
-      .populate('driverId', 'name licenseNumber')
+      .populate('driverId', 'name licenseNumber email')
       .populate('vehicleId', 'plateNumber')
       .populate('violationId', 'code description')
       .populate('issuedBy', 'name badgeId')
       .lean();
+
+    // Notify the linked driver user account about the newly issued fine.
+    const driverEmail = populated?.driverId?.email;
+    if (driverEmail) {
+      const driverUser = await User.findOne({ email: String(driverEmail).toLowerCase(), role: 'driver' })
+        .select('_id')
+        .lean();
+      if (driverUser?._id) {
+        await Notification.create({
+          recipientId: driverUser._id,
+          type: 'fine_issued',
+          message: `A new fine ${populated.fineNumber} of ₹${populated.amount} has been issued to your account.`,
+          relatedId: { fineId: populated._id },
+        });
+      }
+    }
+
     res.status(201).json({ success: true, data: populated });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message || 'Failed to create fine.' });

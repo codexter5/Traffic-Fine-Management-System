@@ -5,6 +5,7 @@ export const authAPI = {
   signup: (data) => api.post('/auth/signup', data),
   register: (data) => api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
+  updateMe: (data) => api.patch('/auth/me', data),
 };
 
 export const notificationsAPI = {
@@ -22,6 +23,8 @@ export const driversAPI = {
 export const vehiclesAPI = {
   list: (params) => api.get('/vehicles', { params }),
   create: (data) => api.post('/vehicles', data),
+  listMy: (params) => api.get('/vehicles/my', { params }),
+  createMy: (data) => api.post('/vehicles/my', data),
 };
 
 export const violationsAPI = {

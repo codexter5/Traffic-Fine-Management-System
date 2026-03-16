@@ -3,11 +3,25 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Manrope', 'Segoe UI', 'sans-serif'],
+      },
       colors: {
-        primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+        primary: {
+          50: '#eef4ff',
+          100: '#dce9ff',
+          200: '#bdd4ff',
+          300: '#91b6ff',
+          400: '#5f90ff',
+          500: '#3f6ef5',
+          600: '#2e56db',
+          700: '#2344b8',
+          800: '#213a96',
+          900: '#20357a',
+        },
       },
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04)',
+        soft: '0 14px 32px -24px rgba(15, 23, 42, 0.45), 0 8px 16px -14px rgba(37, 99, 235, 0.25)',
       },
     },
   },

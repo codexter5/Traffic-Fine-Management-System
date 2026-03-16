@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { usersAPI, driversAPI } from '../api/endpoints';
+import { useAuth } from '../context/AuthContext';
 
 const emptyForm = {
   name: '',
@@ -14,6 +15,7 @@ const emptyForm = {
 };
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
@@ -341,7 +343,9 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((u) => (
+                    {users.map((u) => {
+                      const canManage = u.role !== 'admin' || u._id === currentUser?.id;
+                      return (
                       <tr key={u._id} className="hover:bg-gray-50/50">
                         <td className="table-cell font-medium text-gray-900">{u.name}</td>
                         <td className="table-cell text-gray-600">{u.email}</td>
@@ -360,25 +364,32 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="table-cell text-gray-600">{u.badgeId || '—'}</td>
                         <td className="table-cell text-right space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(u)}
-                            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                          {u.role !== 'admin' && (
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(u)}
-                              className="text-red-600 hover:text-red-700 text-sm font-medium"
-                            >
-                              Delete
-                            </button>
+                          {canManage ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startEdit(u)}
+                                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                              >
+                                Edit
+                              </button>
+                              {u.role !== 'admin' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(u)}
+                                  className="text-red-600 hover:text-red-700 text-sm font-medium"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-xs text-gray-400">Protected admin</span>
                           )}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

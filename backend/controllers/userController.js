@@ -97,6 +97,11 @@ exports.updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
+    if (user.role === 'admin' && req.user.id !== id) {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Admin users cannot be edited by another admin.' });
+    }
     const newEmail = email?.trim().toLowerCase();
     if (newEmail && newEmail !== user.email) {
       const existing = await User.findOne({ email: newEmail });
@@ -163,15 +168,15 @@ exports.deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
-    if (user.role === 'admin') {
-      return res
-        .status(403)
-        .json({ success: false, message: 'Admin users cannot be removed by another admin.' });
-    }
     if (req.user.id === id) {
       return res
         .status(400)
         .json({ success: false, message: 'You cannot delete your own account.' });
+    }
+    if (user.role === 'admin') {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Admin users cannot be removed by another admin.' });
     }
     await user.deleteOne();
     res.json({ success: true, message: 'User deleted successfully.' });

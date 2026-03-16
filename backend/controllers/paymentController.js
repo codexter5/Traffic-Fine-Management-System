@@ -61,6 +61,24 @@ exports.payFine = async (req, res) => {
         );
       }
     });
+
+    const driverEmail = fine.driverId?.email;
+    if (driverEmail) {
+      const driverUser = await User.findOne({ email: String(driverEmail).toLowerCase(), role: 'driver' })
+        .select('_id')
+        .lean();
+      if (driverUser?._id) {
+        notificationPromises.push(
+          Notification.create({
+            recipientId: driverUser._id,
+            type: 'payment_success',
+            message: `Your payment of ₹${payAmount} for fine ${fine.fineNumber} was successful.`,
+            relatedId: { fineId: fine._id, paymentId: payment._id },
+          })
+        );
+      }
+    }
+
     await Promise.all(notificationPromises);
 
     const populated = await Payment.findById(payment._id).populate('fineId').lean();

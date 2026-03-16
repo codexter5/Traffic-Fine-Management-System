@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['fine_paid'],
+      enum: ['fine_paid', 'fine_issued', 'payment_success'],
       default: 'fine_paid',
     },
     message: {
