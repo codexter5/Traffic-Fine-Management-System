@@ -36,6 +36,8 @@ export const finesAPI = {
   get: (id) => api.get(`/fines/${id}`),
   create: (data) => api.post('/fines', data),
   update: (id, data) => api.patch(`/fines/${id}`, data),
+  dispute: (id, data) => api.post(`/fines/${id}/dispute`, data),
+  resolveDispute: (id, data) => api.patch(`/fines/${id}/dispute`, data),
   pay: (id, data) => api.post(`/fines/${id}/pay`, data),
 };
 
@@ -45,6 +47,7 @@ export const paymentsAPI = {
 
 export const adminAPI = {
   getStats: () => api.get('/admin/stats'),
+  auditLogs: (params) => api.get('/admin/audit-logs', { params }),
 };
 
 export const usersAPI = {

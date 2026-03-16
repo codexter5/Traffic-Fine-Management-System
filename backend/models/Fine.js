@@ -55,6 +55,31 @@ const fineSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    dispute: {
+      status: {
+        type: String,
+        enum: ['none', 'pending', 'accepted', 'rejected'],
+        default: 'none',
+      },
+      reason: {
+        type: String,
+        trim: true,
+      },
+      requestedAt: {
+        type: Date,
+      },
+      resolvedAt: {
+        type: Date,
+      },
+      resolutionNote: {
+        type: String,
+        trim: true,
+      },
+      resolvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    },
   },
   { timestamps: true }
 );
@@ -65,5 +90,7 @@ fineSchema.index({ vehicleId: 1 });
 fineSchema.index({ issuedBy: 1 });
 fineSchema.index({ status: 1 });
 fineSchema.index({ issueDate: -1 });
+fineSchema.index({ dueDate: 1 });
+fineSchema.index({ 'dispute.status': 1 });
 
 module.exports = mongoose.model('Fine', fineSchema);
