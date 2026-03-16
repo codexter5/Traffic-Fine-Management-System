@@ -29,6 +29,7 @@ export const vehiclesAPI = {
 
 export const violationsAPI = {
   list: () => api.get('/violations'),
+  create: (data) => api.post('/violations', data),
 };
 
 export const finesAPI = {

@@ -8,7 +8,16 @@ export default function IssueFineForm() {
   const [vehicles, setVehicles] = useState([]);
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [creatingViolation, setCreatingViolation] = useState(false);
+  const [showCustomViolation, setShowCustomViolation] = useState(false);
+  const [customViolationError, setCustomViolationError] = useState('');
   const [success, setSuccess] = useState('');
+  const [customViolation, setCustomViolation] = useState({
+    code: '',
+    description: '',
+    defaultAmount: '',
+    points: '',
+  });
   const [form, setForm] = useState({
     driverId: '',
     vehicleId: '',
@@ -51,6 +60,46 @@ export default function IssueFineForm() {
   const handleViolationSelect = (violationId) => {
     const v = violations.find((x) => x._id === violationId);
     setForm((prev) => ({ ...prev, violationId, amount: v ? v.defaultAmount : prev.amount }));
+  };
+
+  const handleCreateCustomViolation = async (e) => {
+    e.preventDefault();
+    setCustomViolationError('');
+    if (!customViolation.code.trim() || !customViolation.description.trim()) {
+      setCustomViolationError('Code and description are required.');
+      return;
+    }
+    if (!customViolation.defaultAmount && customViolation.defaultAmount !== 0) {
+      setCustomViolationError('Default amount is required.');
+      return;
+    }
+
+    setCreatingViolation(true);
+    try {
+      const res = await violationsAPI.create({
+        code: customViolation.code.trim(),
+        description: customViolation.description.trim(),
+        defaultAmount: Number(customViolation.defaultAmount),
+        points: customViolation.points ? Number(customViolation.points) : 0,
+      });
+
+      if (res.data?.success && res.data?.data) {
+        const created = res.data.data;
+        setViolations((prev) => [...prev, created].sort((a, b) => a.code.localeCompare(b.code)));
+        setForm((prev) => ({
+          ...prev,
+          violationId: created._id,
+          amount: created.defaultAmount,
+        }));
+        setCustomViolation({ code: '', description: '', defaultAmount: '', points: '' });
+        setShowCustomViolation(false);
+        setSuccess(`Custom violation ${created.code} created and selected.`);
+      }
+    } catch (err) {
+      setCustomViolationError(err.response?.data?.message || 'Failed to create custom violation.');
+    } finally {
+      setCreatingViolation(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -154,6 +203,95 @@ export default function IssueFineForm() {
                 </option>
               ))}
             </select>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomViolationError('');
+                  setShowCustomViolation((prev) => !prev);
+                }}
+                className="text-sm font-medium text-primary-600 hover:text-primary-700"
+              >
+                {showCustomViolation ? 'Close custom violation form' : '+ Add custom violation'}
+              </button>
+            </div>
+            {showCustomViolation && (
+              <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-slate-900">Create custom violation</h3>
+                {customViolationError && (
+                  <div className="text-sm text-red-700 bg-red-50 px-3 py-2 rounded-lg border border-red-100">
+                    {customViolationError}
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Code *</label>
+                    <input
+                      type="text"
+                      value={customViolation.code}
+                      onChange={(e) => setCustomViolation((prev) => ({ ...prev, code: e.target.value }))}
+                      className="input-field"
+                      placeholder="e.g. CUSTOM-001"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Default amount (₹) *</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={customViolation.defaultAmount}
+                      onChange={(e) =>
+                        setCustomViolation((prev) => ({ ...prev, defaultAmount: e.target.value }))
+                      }
+                      className="input-field"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Description *</label>
+                  <input
+                    type="text"
+                    value={customViolation.description}
+                    onChange={(e) =>
+                      setCustomViolation((prev) => ({ ...prev, description: e.target.value }))
+                    }
+                    className="input-field"
+                    placeholder="Describe the violation"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Points (optional)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={customViolation.points}
+                    onChange={(e) => setCustomViolation((prev) => ({ ...prev, points: e.target.value }))}
+                    className="input-field"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={creatingViolation}
+                    onClick={handleCreateCustomViolation}
+                    className="btn-primary"
+                  >
+                    {creatingViolation ? 'Creating...' : 'Create violation'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomViolation(false)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Amount (₹) *</label>
