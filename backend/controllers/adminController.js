@@ -13,7 +13,7 @@ exports.getStats = async (req, res) => {
       Payment.aggregate([{ $match: { gatewayStatus: 'success' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
       Driver.countDocuments(),
       Vehicle.countDocuments(),
-      User.countDocuments({ role: 'officer' }),
+      User.countDocuments({ role: 'admin' }),
     ]);
     const revenue = totalRevenue[0]?.total || 0;
     res.json({
