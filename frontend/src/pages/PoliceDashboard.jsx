@@ -26,22 +26,43 @@ export default function PoliceDashboard() {
         <p className="mt-1 text-sm text-gray-500">Fines you have issued (from database).</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card border-l-4 border-l-primary-500">
-          <div className="card-body">
-            <p className="text-sm text-gray-500">My issued fines</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{fines.length}</p>
+        <div className="card">
+          <div className="card-body flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">My issued fines</p>
+              <p className="text-3xl font-bold text-slate-900 mt-2 tracking-tight">{fines.length}</p>
+            </div>
+            <span className="w-11 h-11 shrink-0 rounded-2xl bg-primary-50 flex items-center justify-center">
+              <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </span>
           </div>
         </div>
-        <div className="card border-l-4 border-l-amber-500">
-          <div className="card-body">
-            <p className="text-sm text-gray-500">Pending</p>
-            <p className="text-2xl font-bold text-amber-600 mt-1">{pending}</p>
+        <div className="card">
+          <div className="card-body flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</p>
+              <p className="text-3xl font-bold text-amber-600 mt-2 tracking-tight">{pending}</p>
+            </div>
+            <span className="w-11 h-11 shrink-0 rounded-2xl bg-amber-50 flex items-center justify-center">
+              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
           </div>
         </div>
-        <div className="card border-l-4 border-l-green-500">
-          <div className="card-body">
-            <p className="text-sm text-gray-500">Paid</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{paid}</p>
+        <div className="card">
+          <div className="card-body flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Paid</p>
+              <p className="text-3xl font-bold text-emerald-600 mt-2 tracking-tight">{paid}</p>
+            </div>
+            <span className="w-11 h-11 shrink-0 rounded-2xl bg-emerald-50 flex items-center justify-center">
+              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
           </div>
         </div>
       </div>

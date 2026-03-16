@@ -26,16 +26,30 @@ export default function DriverDashboard() {
         <p className="mt-1 text-sm text-gray-500">Fines linked to your account (from database).</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="card border-l-4 border-l-amber-500 bg-amber-50/30">
-          <div className="card-body">
-            <p className="text-sm font-medium text-amber-800">Pending to pay</p>
-            <p className="text-2xl font-bold text-amber-700 mt-1">{pending.length}</p>
+        <div className="card">
+          <div className="card-body flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending to pay</p>
+              <p className="text-3xl font-bold text-amber-600 mt-2 tracking-tight">{pending.length}</p>
+            </div>
+            <span className="w-11 h-11 shrink-0 rounded-2xl bg-amber-50 flex items-center justify-center">
+              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
           </div>
         </div>
-        <div className="card border-l-4 border-l-green-500 bg-green-50/30">
-          <div className="card-body">
-            <p className="text-sm font-medium text-green-800">Paid</p>
-            <p className="text-2xl font-bold text-green-700 mt-1">{paid.length}</p>
+        <div className="card">
+          <div className="card-body flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Paid</p>
+              <p className="text-3xl font-bold text-emerald-600 mt-2 tracking-tight">{paid.length}</p>
+            </div>
+            <span className="w-11 h-11 shrink-0 rounded-2xl bg-emerald-50 flex items-center justify-center">
+              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
           </div>
         </div>
       </div>

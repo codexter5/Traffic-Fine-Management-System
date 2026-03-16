@@ -23,6 +23,19 @@ export default function AdminUsersPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+
+  const filteredUsers = users.filter((u) => {
+    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      u.name?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.badgeId?.toLowerCase().includes(q);
+    return matchesRole && matchesSearch;
+  });
 
   const loadUsers = () => {
     setLoading(true);
@@ -325,12 +338,65 @@ export default function AdminUsersPage() {
 
         <div className="card lg:col-span-2">
           <div className="card-body">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Existing Users</h2>
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-900">Existing Users</h2>
+              {!loading && users.length > 0 && (
+                <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                  {filteredUsers.length} / {users.length}
+                </span>
+              )}
+            </div>
+
+            {/* Filter toolbar */}
+            <div className="flex flex-col sm:flex-row gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="relative flex-1 min-w-0">
+                <svg
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by name, email or badge…"
+                  className="input-field pl-9 py-2 text-sm"
+                />
+              </div>
+              <div className="flex gap-2 shrink-0">
+                {['all', 'admin', 'officer', 'driver'].map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRoleFilter(r)}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold border transition whitespace-nowrap ${
+                      roleFilter === r
+                        ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-primary-400 hover:text-primary-600'
+                    }`}
+                  >
+                    {r === 'all' ? 'All' : r.charAt(0).toUpperCase() + r.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {loading ? (
               <p className="text-gray-500 text-sm">Loading users...</p>
-            ) : users.length === 0 ? (
-              <p className="text-gray-500 text-sm">No users yet. Create one with the form.</p>
+            ) : filteredUsers.length === 0 ? (
+              <div className="py-10 text-center">
+                <svg className="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <p className="text-sm font-medium text-slate-500">
+                  {users.length === 0 ? 'No users yet. Create one with the form.' : 'No users match your filters.'}
+                </p>
+              </div>
             ) : (
+              <>
               <div className="overflow-x-auto -mx-6 -mb-6">
                 <table className="min-w-full">
                   <thead>
@@ -343,7 +409,7 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((u) => {
+                    {filteredUsers.map((u) => {
                       const canManage = u.role !== 'admin' || u._id === currentUser?.id;
                       return (
                       <tr key={u._id} className="hover:bg-gray-50/50">
@@ -393,6 +459,7 @@ export default function AdminUsersPage() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </div>
         </div>
