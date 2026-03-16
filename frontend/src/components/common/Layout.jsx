@@ -9,17 +9,22 @@ const navLinks = {
     { to: '/fines', label: 'Fines' },
     { to: '/payments', label: 'Payments' },
     { to: '/users', label: 'Users' },
+    { to: '/audit-logs', label: 'Audit Logs' },
+    { to: '/notifications', label: 'Notifications' },
     { to: '/profile', label: 'Profile' },
   ],
   officer: [
     { to: '/police', label: 'Dashboard' },
     { to: '/issue-fine', label: 'Issue Fine' },
     { to: '/fines', label: 'My Fines' },
+    { to: '/notifications', label: 'Notifications' },
     { to: '/profile', label: 'Profile' },
   ],
   driver: [
     { to: '/driver', label: 'My Fines' },
+    { to: '/payments', label: 'Payments' },
     { to: '/my-vehicles', label: 'My Vehicles' },
+    { to: '/notifications', label: 'Notifications' },
     { to: '/profile', label: 'Profile' },
   ],
 };

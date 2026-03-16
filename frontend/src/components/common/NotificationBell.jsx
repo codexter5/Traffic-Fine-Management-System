@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { notificationsAPI } from '../../api/endpoints';
+import { useAuth } from '../../context/AuthContext';
 
 export function NotificationBell() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -44,6 +48,23 @@ export function NotificationBell() {
     notificationsAPI.markAllRead().then(() => load());
   };
 
+  const handleNotificationClick = async (notification) => {
+    if (!notification.read) {
+      await notificationsAPI.markRead(notification._id);
+    }
+    setOpen(false);
+    load();
+    if (notification.relatedId?.paymentId) {
+      navigate(user?.role === 'admin' || user?.role === 'driver' ? '/payments' : '/fines');
+      return;
+    }
+    if (notification.relatedId?.fineId) {
+      navigate('/fines');
+      return;
+    }
+    navigate('/notifications');
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -66,15 +87,27 @@ export function NotificationBell() {
           <div className="card-body p-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
               <span className="font-semibold text-gray-900">Notifications</span>
-              {unreadCount > 0 && (
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={markAllRead}
-                  className="text-xs text-primary-600 hover:underline"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate('/notifications');
+                  }}
+                  className="text-xs text-slate-500 hover:text-primary-600"
                 >
-                  Mark all read
+                  View all
                 </button>
-              )}
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllRead}
+                    className="text-xs text-primary-600 hover:underline"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
             </div>
             {loading ? (
               <p className="p-4 text-gray-500 text-sm">Loading...</p>
@@ -86,7 +119,9 @@ export function NotificationBell() {
                   <li
                     key={n._id}
                     className={`px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer ${!n.read ? 'bg-primary-50/50' : ''}`}
-                    onClick={() => { markRead(n._id); }}
+                    onClick={() => {
+                      handleNotificationClick(n);
+                    }}
                   >
                     <p className="text-gray-800">{n.message}</p>
                     <p className="text-xs text-gray-500 mt-1">

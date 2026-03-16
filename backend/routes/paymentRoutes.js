@@ -5,7 +5,6 @@ const { roleCheck } = require('../middleware/roleCheck');
 
 const router = express.Router();
 router.use(protect);
-router.use(roleCheck('admin'));
-router.get('/', getPayments);
+router.get('/', roleCheck('admin', 'driver'), getPayments);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const Fine = require('../models/Fine');
 const Driver = require('../models/Driver');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const { createAuditLog } = require('../utils/auditLog');
 
 const generateTransactionId = () => `TXN${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
@@ -81,6 +82,14 @@ exports.payFine = async (req, res) => {
 
     await Promise.all(notificationPromises);
 
+    await createAuditLog(req, {
+      action: 'fine_paid',
+      fineId: fine._id,
+      paymentId: payment._id,
+      details: `Paid fine ${fine.fineNumber} for ₹${payAmount}.`,
+      metadata: { method, transactionId },
+    });
+
     const populated = await Payment.findById(payment._id).populate('fineId').lean();
     res.status(201).json({
       success: true,
@@ -94,16 +103,43 @@ exports.payFine = async (req, res) => {
 
 exports.getPayments = async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, q = '', method = '' } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
+
+    const paymentQuery = {};
+    if (method) paymentQuery.method = method;
+
+    if (req.user.role === 'driver') {
+      const driver = await Driver.findOne({ email: req.user.email }).select('_id').lean();
+      if (!driver) return res.json({ success: true, data: [], total: 0, page: Number(page), limit: Number(limit) });
+      const driverFineIds = await Fine.find({ driverId: driver._id }).select('_id').lean();
+      paymentQuery.fineId = { $in: driverFineIds.map((item) => item._id) };
+    }
+
+    if (q.trim()) {
+      const regex = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const matchingFineIds = await Fine.find({ fineNumber: regex }).select('_id').lean();
+      paymentQuery.$or = [
+        { transactionId: regex },
+        { fineId: { $in: matchingFineIds.map((item) => item._id) } },
+      ];
+    }
+
     const [payments, total] = await Promise.all([
-      Payment.find({})
-        .populate('fineId', 'fineNumber amount driverId violationId')
+      Payment.find(paymentQuery)
+        .populate({
+          path: 'fineId',
+          populate: [
+            { path: 'driverId', select: 'name licenseNumber email' },
+            { path: 'vehicleId', select: 'plateNumber make model' },
+            { path: 'violationId', select: 'code description' },
+          ],
+        })
         .sort({ paidAt: -1 })
         .skip(skip)
         .limit(Number(limit))
         .lean(),
-      Payment.countDocuments(),
+      Payment.countDocuments(paymentQuery),
     ]);
     res.json({ success: true, data: payments, total, page: Number(page), limit: Number(limit) });
   } catch (err) {

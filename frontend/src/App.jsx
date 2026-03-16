@@ -13,6 +13,9 @@ import PaymentsListPage from './pages/PaymentsListPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import ProfilePage from './pages/ProfilePage';
 import MyVehiclesPage from './pages/MyVehiclesPage';
+import NotificationsPage from './pages/NotificationsPage';
+import EditFinePage from './pages/EditFinePage';
+import AuditLogsPage from './pages/AuditLogsPage';
 
 function DashboardRedirect() {
   const navigate = useNavigate();
@@ -42,11 +45,14 @@ function App() {
         <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsersPage /></ProtectedRoute>} />
         <Route path="driver" element={<ProtectedRoute allowedRoles={['driver']}><DriverDashboard /></ProtectedRoute>} />
         <Route path="my-vehicles" element={<ProtectedRoute allowedRoles={['driver']}><MyVehiclesPage /></ProtectedRoute>} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="issue-fine" element={<ProtectedRoute allowedRoles={['officer', 'admin']}><IssueFineForm /></ProtectedRoute>} />
         <Route path="fines" element={<FinesListPage />} />
+        <Route path="fines/:id/edit" element={<ProtectedRoute allowedRoles={['officer', 'admin']}><EditFinePage /></ProtectedRoute>} />
         <Route path="fines/:id/pay" element={<ProtectedRoute allowedRoles={['driver', 'admin']}><PayFinePage /></ProtectedRoute>} />
-        <Route path="payments" element={<ProtectedRoute allowedRoles={['admin']}><PaymentsListPage /></ProtectedRoute>} />
+        <Route path="payments" element={<ProtectedRoute allowedRoles={['admin', 'driver']}><PaymentsListPage /></ProtectedRoute>} />
+        <Route path="audit-logs" element={<ProtectedRoute allowedRoles={['admin']}><AuditLogsPage /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
