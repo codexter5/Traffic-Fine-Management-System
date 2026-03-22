@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { Layout } from './components/common/Layout';
-import LoginPage from './pages/LoginPage';
+import RoleBasedLoginPage from './pages/RoleBasedLoginPage';
 import SignupPage from './pages/SignupPage';
 import PoliceDashboard from './pages/PoliceDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -29,7 +29,7 @@ function DashboardRedirect() {
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<RoleBasedLoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route
         path="/"
